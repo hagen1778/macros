@@ -26,6 +26,7 @@ func main() {
 			if e.String() == ";" && e.Value == 1 && kb.R_SHIFT {
 				fmt.Println("R_SHIFT + ; was pressed!")
 				kb.Execute("kiss my shiny metal but")
+
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package keyboard
 import (
 	"syscall"
 	"unsafe"
+	"encoding/binary"
 )
 
 //event types
@@ -32,6 +33,41 @@ type InputEvent struct {
 	Value int32
 }
 
+func acquireInputEvent(key uint16) *InputEvent{
+	ev := &InputEvent{}
+	ev.Type = EV_KEY
+	ev.Code = key
+
+	return ev
+}
+
 func (e InputEvent) String() string {
 	return keyToName[e.Code]
+}
+
+func (e *InputEvent) KeyDown() *InputEvent {
+	e.Value = 1
+	e.Write()
+	return e
+}
+
+func (e *InputEvent) KeyUp() *InputEvent {
+	e.Value = 0
+	e.Write()
+	return e
+}
+
+func (e *InputEvent) KeyPress() *InputEvent {
+	e.KeyDown().KeyUp()
+
+	return e
+}
+
+func (e *InputEvent) Write() error {
+	err := binary.Write(fd, binary.LittleEndian, e)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

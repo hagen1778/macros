@@ -33,6 +33,8 @@ type InputDevice struct {
 	R_SHIFT bool
 }
 
+var fd *os.File
+
 func Init() (*InputDevice, error) {
 	if err := checkRoot(); err != nil {
 		return nil, err
@@ -46,6 +48,11 @@ func Init() (*InputDevice, error) {
 
 		device := newInputDeviceReader(buff, i)
 		if strings.Contains(device.Name, "keyboard") {
+			fd, err = os.OpenFile(fmt.Sprintf(DEVICE_FILE, device.Id), os.O_WRONLY|syscall.O_NONBLOCK, os.ModeDevice)
+			if err != nil {
+				panic(err)
+			}
+
 			return device, nil
 		}
 	}
@@ -120,12 +127,17 @@ func (d *InputDevice) Listen() (chan InputEvent, error) {
 	return ret, nil
 }
 
-func (d *InputDevice) Execute(str string) {
-	fd, err := os.OpenFile(fmt.Sprintf(DEVICE_FILE, d.Id), os.O_WRONLY|syscall.O_NONBLOCK, os.ModeDevice)
-	if err != nil {
-		panic(err)
+func sanitize(r rune) string {
+	if r == ' ' {
+		return "SPACE"
 	}
 
+	return string(r)
+}
+
+
+
+func (d *InputDevice) Execute(str string) {
 	var key uint16
 	var ok bool
 
@@ -137,45 +149,11 @@ func (d *InputDevice) Execute(str string) {
 			return
 		}
 
-		err = keyPress(key, fd)
-		if err != nil {
-			panic(err)
-		}
+		e := acquireInputEvent(key)
+		e.KeyPress()
 	}
 }
 
-func sanitize(r rune) string {
-	if r == ' ' {
-		return "SPACE"
-	}
-
-	return string(r)
-}
-
-func acquireInputEvent(key uint16) InputEvent{
-	ev := InputEvent{}
-	ev.Type = EV_KEY
-	ev.Code = key
-
-	return ev
-}
-
-func keyPress(key uint16, fd *os.File) error {
-	ev := acquireInputEvent(key)
-
-	ev.Value = 1
-	err := binary.Write(fd, binary.LittleEndian, &ev)
-	if err != nil {
-		return err
-	}
-
-	ev.Value = 0
-	err = binary.Write(fd, binary.LittleEndian, &ev)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func (d *InputDevice) checkModifiers(e *InputEvent) {
 	switch e.String() {
