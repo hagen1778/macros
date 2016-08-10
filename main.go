@@ -25,7 +25,7 @@ func main() {
 			//fmt.Printf("%#v\n",e)
 			if e.String() == ";" && e.Value == 1 && kb.R_SHIFT {
 				fmt.Println("R_SHIFT + ; was pressed!")
-				kb.Execute("kiss my shiny metal ass")
+				kb.Execute("kiss my shiny metal but")
 			}
 		}
 	}
