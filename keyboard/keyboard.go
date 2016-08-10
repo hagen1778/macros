@@ -7,6 +7,8 @@ import (
 	"strings"
 	"bytes"
 	"bufio"
+	"encoding/binary"
+	"os"
 )
 
 const (
@@ -21,9 +23,9 @@ type InputDevice struct {
 	Name string
 }
 
-func Init() *InputDevice {
+func Init() (*InputDevice, error) {
 	if err := checkRoot(); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	for i := 0; i < MAX_FILES; i++ {
@@ -34,11 +36,11 @@ func Init() *InputDevice {
 
 		device := newInputDeviceReader(buff, i)
 		if strings.Contains(device.Name, "keyboard") {
-			return device
+			return device, nil
 		}
 	}
 
-	panic(fmt.Errorf("Keyboard not found"))
+	return nil, fmt.Errorf("Keyboard not found")
 }
 
 func checkRoot() error {
@@ -65,3 +67,44 @@ func newInputDeviceReader(buff []byte, id int) *InputDevice {
 }
 
 
+
+func (d *InputDevice) Listen() (chan InputEvent, error) {
+	ret := make(chan InputEvent, 512)
+
+	if err := checkRoot(); err != nil {
+		close(ret)
+		return ret, err
+	}
+
+	fd, err := os.Open(fmt.Sprintf(DEVICE_FILE, d.Id))
+	if err != nil {
+		close(ret)
+		return ret, fmt.Errorf("Error opening device file:", err)
+	}
+
+	go func() {
+
+		tmp := make([]byte, eventsize)
+		event := InputEvent{}
+		for {
+
+			n, err := fd.Read(tmp)
+			if err != nil {
+				panic(err)
+				close(ret)
+				break
+			}
+			if n <= 0 {
+				continue
+			}
+
+			if err := binary.Read(bytes.NewBuffer(tmp), binary.LittleEndian, &event); err != nil {
+				panic(err)
+			}
+
+			ret <- event
+
+		}
+	}()
+	return ret, nil
+}

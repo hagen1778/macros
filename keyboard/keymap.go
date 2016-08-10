@@ -126,6 +126,7 @@ func init() {
 		119: "Pause",
 	}
 
+	nameToKey = make(map[string]uint16)
 	for k, v := range keyToName {
 		nameToKey[v] = k
 	}
