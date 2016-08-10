@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"os"
+	"syscall"
 )
 
 const (
@@ -75,8 +76,6 @@ func newInputDeviceReader(buff []byte, id int) *InputDevice {
 	}
 }
 
-
-
 func (d *InputDevice) Listen() (chan InputEvent, error) {
 	ret := make(chan InputEvent, 512)
 
@@ -116,8 +115,47 @@ func (d *InputDevice) Listen() (chan InputEvent, error) {
 			ret <- event
 
 		}
+		defer fd.Close()
 	}()
 	return ret, nil
+}
+
+func (d *InputDevice) Execute(s string) {
+	fd, err := os.OpenFile(fmt.Sprintf(DEVICE_FILE, d.Id), os.O_WRONLY|syscall.O_NONBLOCK, os.ModeDevice)
+	if err != nil {
+		panic(err)
+	}
+
+	var key uint16
+	var ok bool
+	if key, ok = nameToKey[strings.ToUpper(s)]; !ok {
+		fmt.Printf("No such symbol '%s' in register\n", s)
+		return
+	}
+
+	err = keyPress(key, fd)
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func keyPress(key uint16, fd *os.File) error {
+	ev := InputEvent{}
+	ev.Type = EV_KEY
+	ev.Code = key
+	ev.Value = 1
+	err := binary.Write(fd, binary.LittleEndian, &ev)
+	if err != nil {
+		return err
+	}
+
+	ev.Value = 0
+	err = binary.Write(fd, binary.LittleEndian, &ev)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (d *InputDevice) checkModifiers(e *InputEvent) {
