@@ -7,9 +7,6 @@ import (
 	"strings"
 	"bytes"
 	"bufio"
-	"log"
-	"encoding/binary"
-	"os"
 )
 
 const (
@@ -24,7 +21,7 @@ type InputDevice struct {
 	Name string
 }
 
-func Init() {
+func Init() *InputDevice {
 	if err := checkRoot(); err != nil {
 		panic(err)
 	}

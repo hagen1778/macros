@@ -1,6 +1,7 @@
 package macros
 
+import "github.com/hagen1778/macros/keyboard"
 
 func main() {
-	keyboard := keyboard.Init()
+	kb:= keyboard.Init()
 }
