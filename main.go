@@ -23,9 +23,9 @@ func main() {
 		//listen only key stroke event
 		if e.Type == keyboard.EV_KEY {
 			//fmt.Printf("%#v\n",e)
-			if e.String() == ";" && kb.R_SHIFT {
+			if e.String() == ";" && e.Value == 1 && kb.R_SHIFT {
 				fmt.Println("R_SHIFT + ; was pressed!")
-				kb.Execute("s")
+				kb.Execute("kiss my shiny metal ass")
 			}
 		}
 	}

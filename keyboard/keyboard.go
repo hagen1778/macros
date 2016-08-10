@@ -120,7 +120,7 @@ func (d *InputDevice) Listen() (chan InputEvent, error) {
 	return ret, nil
 }
 
-func (d *InputDevice) Execute(s string) {
+func (d *InputDevice) Execute(str string) {
 	fd, err := os.OpenFile(fmt.Sprintf(DEVICE_FILE, d.Id), os.O_WRONLY|syscall.O_NONBLOCK, os.ModeDevice)
 	if err != nil {
 		panic(err)
@@ -128,22 +128,41 @@ func (d *InputDevice) Execute(s string) {
 
 	var key uint16
 	var ok bool
-	if key, ok = nameToKey[strings.ToUpper(s)]; !ok {
-		fmt.Printf("No such symbol '%s' in register\n", s)
-		return
-	}
 
-	err = keyPress(key, fd)
-	if err != nil {
-		panic(err)
-	}
+	for _, r := range str {
+		c := sanitize(r)
 
+		if key, ok = nameToKey[strings.ToUpper(c)]; !ok {
+			fmt.Printf("No such symbol '%s' in register\n", c)
+			return
+		}
+
+		err = keyPress(key, fd)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
-func keyPress(key uint16, fd *os.File) error {
+func sanitize(r rune) string {
+	if r == ' ' {
+		return "SPACE"
+	}
+
+	return string(r)
+}
+
+func acquireInputEvent(key uint16) InputEvent{
 	ev := InputEvent{}
 	ev.Type = EV_KEY
 	ev.Code = key
+
+	return ev
+}
+
+func keyPress(key uint16, fd *os.File) error {
+	ev := acquireInputEvent(key)
+
 	ev.Value = 1
 	err := binary.Write(fd, binary.LittleEndian, &ev)
 	if err != nil {
