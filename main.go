@@ -2,5 +2,5 @@ package macros
 
 
 func main() {
-	keyboard := keyboard.Init()
+	//keyboard := keyboard.Init()
 }
