@@ -1,0 +1,8 @@
+# Created by .ignore support plugin (hsz.mobi)
+bin
+pkg
+tags
+*.pyc
+*.pprof
+*.index
+*.data
