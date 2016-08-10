@@ -22,10 +22,9 @@ func main() {
 	for e := range kb_events {
 		//listen only key stroke event
 		if e.Type == keyboard.EV_KEY {
-			//fmt.Println(i.KeyString())
-			if e.String() == "F12" {
-				//Run(Htop)
-				fmt.Println("f12 was pressed!")
+			//fmt.Printf("%#v\n",e)
+			if e.String() == ";" && kb.R_SHIFT {
+				fmt.Println("R_SHIFT + ; was pressed!")
 			}
 		}
 	}

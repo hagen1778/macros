@@ -19,8 +19,17 @@ const (
 )
 
 type InputDevice struct {
-	Id   int
-	Name string
+	Id   	int
+	Name 	string
+
+	L_ALT 	bool
+	R_ALT 	bool
+
+	L_CTRL 	bool
+	R_CTRL 	bool
+
+	L_SHIFT bool
+	R_SHIFT bool
 }
 
 func Init() (*InputDevice, error) {
@@ -102,9 +111,28 @@ func (d *InputDevice) Listen() (chan InputEvent, error) {
 				panic(err)
 			}
 
+			d.checkModifiers(&event)
+
 			ret <- event
 
 		}
 	}()
 	return ret, nil
+}
+
+func (d *InputDevice) checkModifiers(e *InputEvent) {
+	switch e.String() {
+	case "L_SHIFT":
+		d.L_SHIFT = e.Value != 0
+	case "R_SHIFT":
+		d.R_SHIFT = e.Value != 0
+	case "L_ALT":
+		d.L_ALT = e.Value != 0
+	case "R_ALT":
+		d.R_ALT = e.Value != 0
+	case "L_CTRL":
+		d.L_CTRL = e.Value != 0
+	case "R_CTRL":
+		d.R_CTRL = e.Value != 0
+	}
 }
