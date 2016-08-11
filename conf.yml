@@ -1,0 +1,18 @@
+global:
+  mode_button: F12
+  default_delay: 100ms
+
+macros:
+ - name: 'HTOP skype process'
+#   activate: 'L_ALT H'
+   activate: ';'
+   scenario:
+     - press: L_CTRL L_ALT T
+     - sleep: 500ms
+     - print: htop
+     - sleep: 50ms
+     - press: ENTER
+     - sleep: 50ms
+     - press: F4
+     - sleep: 50ms
+     - print: skype
