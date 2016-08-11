@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/hagen1778/macros/keyboard"
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -24,9 +25,25 @@ func main() {
 		if e.Type == keyboard.EV_KEY {
 			//fmt.Printf("%#v\n",e)
 			if e.String() == "Z" && e.Value == 1  {
-				kb.Print("kiss my shiny metal but")
-				kb.Press("L_CTRL L_ALT T")
+				//kb.Print("kiss my shiny metal but")
+				htop(kb, "skype")
 			}
 		}
 	}
+}
+
+func htop(kb *keyboard.InputDevice, search string) {
+	kb.Press("L_CTRL L_ALT T")
+	time.Sleep(500*time.Millisecond)
+
+	kb.Print("htop")
+	time.Sleep(100*time.Millisecond)
+
+	kb.Press("ENTER")
+	time.Sleep(100*time.Millisecond)
+
+	kb.Press("F4")
+	time.Sleep(100*time.Millisecond)
+
+	kb.Print(search)
 }

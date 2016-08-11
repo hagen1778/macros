@@ -152,6 +152,8 @@ func (d *InputDevice) Print(str string) {
 		e := acquireInputEvent(key)
 		e.KeyPress()
 	}
+
+	sync()
 }
 
 func (d *InputDevice) Press(str string) {
@@ -179,6 +181,8 @@ func (d *InputDevice) Press(str string) {
 	for _, e := range evPool {
 		e.KeyUp()
 	}
+
+	sync()
 }
 
 
