@@ -1,14 +1,14 @@
 package keyboard
 
 import (
+	"bufio"
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/user"
 	"strings"
-	"bytes"
-	"bufio"
-	"encoding/binary"
-	"os"
 	"syscall"
 )
 
@@ -20,14 +20,14 @@ const (
 )
 
 type InputDevice struct {
-	Id   	int
-	Name 	string
+	Id   int
+	Name string
 
-	L_ALT 	bool
-	R_ALT 	bool
+	L_ALT bool
+	R_ALT bool
 
-	L_CTRL 	bool
-	R_CTRL 	bool
+	L_CTRL bool
+	R_CTRL bool
 
 	L_SHIFT bool
 	R_SHIFT bool
@@ -135,8 +135,6 @@ func sanitize(r rune) string {
 	return string(r)
 }
 
-
-
 func (d *InputDevice) Print(str string) {
 	var key uint16
 	var ok bool
@@ -161,7 +159,7 @@ func (d *InputDevice) Press(str string) {
 	var ok bool
 	var evPool []*InputEvent
 
-	for _, r := range strings.Split(str, " ") {
+	for _, r := range strings.Fields(str) {
 		c := string(r)
 
 		if key, ok = nameToKey[strings.ToUpper(c)]; !ok {
@@ -184,7 +182,6 @@ func (d *InputDevice) Press(str string) {
 
 	sync()
 }
-
 
 func (d *InputDevice) checkModifiers(e *InputEvent) {
 	switch e.String() {
