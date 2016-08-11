@@ -137,7 +137,7 @@ func sanitize(r rune) string {
 
 
 
-func (d *InputDevice) Execute(str string) {
+func (d *InputDevice) Print(str string) {
 	var key uint16
 	var ok bool
 
@@ -151,6 +151,33 @@ func (d *InputDevice) Execute(str string) {
 
 		e := acquireInputEvent(key)
 		e.KeyPress()
+	}
+}
+
+func (d *InputDevice) Press(str string) {
+	var key uint16
+	var ok bool
+	var evPool []*InputEvent
+
+	for _, r := range strings.Split(str, " ") {
+		c := string(r)
+
+		if key, ok = nameToKey[strings.ToUpper(c)]; !ok {
+			fmt.Printf("No such symbol '%s' in register\n", c)
+			return
+		}
+
+		evPool = append(evPool, acquireInputEvent(key))
+	}
+
+	for _, e := range evPool {
+		e.KeyDown()
+	}
+
+	sync()
+
+	for _, e := range evPool {
+		e.KeyUp()
 	}
 }
 

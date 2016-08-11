@@ -41,6 +41,16 @@ func acquireInputEvent(key uint16) *InputEvent{
 	return ev
 }
 
+func sync() {
+	ev := &InputEvent{}
+	ev.Type = EV_SYN
+
+	err := ev.Write()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func (e InputEvent) String() string {
 	return keyToName[e.Code]
 }
