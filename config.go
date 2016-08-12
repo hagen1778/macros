@@ -1,18 +1,16 @@
 package main
 
 import (
-	"gopkg.in/yaml.v2"
 	"fmt"
-	"github.com/hagen1778/macros/keyboard"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"strings"
-	"log"
 )
 
 type config struct {
-	Macroses []*Macros `yaml:"macros"`
-	Global   global    `yaml:"global"`
+	Rules  []*rule `yaml:"rules"`
+	Global global  `yaml:"global"`
 
 	// Catches all undefined fields and must be empty after parsing.
 	XXX map[string]interface{} `yaml:",inline"`
@@ -26,39 +24,13 @@ type global struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
-type Macros struct {
+type rule struct {
 	Name     string `yaml:"name"`
 	Activate string `yaml:"activate"`
-	Scenario []rule `yaml:"scenario"`
-
-	actions []actioner
+	Scenario []step `yaml:"scenario"`
 
 	// Catches all undefined fields and must be empty after parsing.
 	XXX map[string]interface{} `yaml:",inline"`
-}
-
-func (m *Macros) Run(d *keyboard.InputDevice) {
-	for _, a := range m.actions {
-		a.Run(d)
-	}
-}
-
-// Validate checks whether all names and values in the action list
-// are valid.
-func (cfg *config) Validate() error {
-	for _, macros := range cfg.Macroses {
-		for _, rule := range macros.Scenario {
-			action, err := rule.convertToAction()
-			if err != nil {
-				return fmt.Errorf("invalid rule %#v", rule)
-			}
-
-			macros.actions = append(macros.actions, action)
-		}
-		log.Printf("Macros %q registred. Listen: %s", macros.Name, macros.Activate)
-	}
-
-	return nil
 }
 
 func loadFile(filename string) (*config, error) {
@@ -76,6 +48,9 @@ func loadFile(filename string) (*config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	//TODO: validate XXX
+
 	return cfg, nil
 }
 
@@ -103,18 +78,4 @@ func checkOverflow(m map[string]interface{}) error {
 		return fmt.Errorf("unknown fields in config: %s", strings.Join(keys, ", "))
 	}
 	return nil
-}
-
-type MacrosFunc func (d *keyboard.InputDevice)
-
-func (cfg *config) CheckEvent(e *keyboard.InputEvent) (MacrosFunc, bool) {
-	if e.Type == keyboard.EV_KEY && e.Value == 1 {
-		for _, macros := range cfg.Macroses {
-			if macros.Activate == e.String() {
-				return macros.Run, true
-			}
-		}
-	}
-
-	return nil, false
 }

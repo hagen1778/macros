@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"github.com/hagen1778/macros/keyboard"
+	"time"
 )
 
-type rule map[string]string
+type step map[string]string
 
-func (r rule) convertToAction() (a actioner, err error) {
-	for key, value := range r {
+func (s step) convertToAction() (a runner, err error) {
+	for key, value := range s {
 		switch key {
 		case "sleep":
 			var dur time.Duration
@@ -30,7 +30,7 @@ func (r rule) convertToAction() (a actioner, err error) {
 	return
 }
 
-type actioner interface {
+type runner interface {
 	Run(d *keyboard.InputDevice)
 }
 

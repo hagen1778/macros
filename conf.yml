@@ -2,7 +2,7 @@ global:
   mode_button: F12
   default_delay: 100ms
 
-macros:
+rules:
  - name: 'HTOP skype process'
 #   activate: 'L_ALT H'
    activate: ';'
