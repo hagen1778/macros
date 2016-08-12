@@ -4,15 +4,12 @@ global:
 
 rules:
  - name: 'HTOP skype process'
-#   activate: 'L_ALT H'
-   activate: ';'
+   activate: 'L_ALT H'
+#   activate: 'K'
    scenario:
      - press: L_CTRL L_ALT T
-     - sleep: 500ms
+     - sleep: 400ms
      - print: htop
-     - sleep: 50ms
      - press: ENTER
-     - sleep: 50ms
      - press: F4
-     - sleep: 50ms
      - print: skype

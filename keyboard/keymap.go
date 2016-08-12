@@ -2,6 +2,7 @@ package keyboard
 
 var keyToName map[uint16]string
 var nameToKey map[string]uint16
+var modifiers map[string]bool
 
 func init() {
 	keyToName = map[uint16]string{
@@ -130,4 +131,18 @@ func init() {
 	for k, v := range keyToName {
 		nameToKey[v] = k
 	}
+
+	modifiers = map[string]bool{
+		"L_ALT":   false,
+		"R_ALT":   false,
+		"L_CTRL":  false,
+		"R_CTRL":  false,
+		"L_SHIFT": false,
+		"R_SHIFT": false,
+	}
+}
+
+func IsModifier(key string) bool {
+	_, ok := modifiers[key]
+	return ok
 }

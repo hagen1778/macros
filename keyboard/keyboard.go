@@ -23,14 +23,7 @@ type InputDevice struct {
 	Id   int
 	Name string
 
-	L_ALT bool
-	R_ALT bool
-
-	L_CTRL bool
-	R_CTRL bool
-
-	L_SHIFT bool
-	R_SHIFT bool
+	Modifiers map[string]bool
 }
 
 var fd *os.File
@@ -78,8 +71,9 @@ func newInputDeviceReader(buff []byte, id int) *InputDevice {
 	splt := strings.Split(string(dev), "=")
 
 	return &InputDevice{
-		Id:   id,
-		Name: splt[1],
+		Id:        id,
+		Name:      splt[1],
+		Modifiers: modifiers,
 	}
 }
 
@@ -94,7 +88,7 @@ func (d *InputDevice) Listen() (chan InputEvent, error) {
 	fd, err := os.Open(fmt.Sprintf(DEVICE_FILE, d.Id))
 	if err != nil {
 		close(ret)
-		return ret, fmt.Errorf("Error opening device file:", err)
+		return ret, fmt.Errorf("Error opening device file: %s", err)
 	}
 
 	go func() {
@@ -117,7 +111,7 @@ func (d *InputDevice) Listen() (chan InputEvent, error) {
 				panic(err)
 			}
 
-			d.checkModifiers(&event)
+			d.updModifiers(&event)
 
 			ret <- event
 
@@ -173,29 +167,17 @@ func (d *InputDevice) Press(str string) {
 	for _, e := range evPool {
 		e.KeyDown()
 	}
-
 	sync()
 
 	for _, e := range evPool {
 		e.KeyUp()
 	}
-
 	sync()
 }
 
-func (d *InputDevice) checkModifiers(e *InputEvent) {
-	switch e.String() {
-	case "L_SHIFT":
-		d.L_SHIFT = e.Value != 0
-	case "R_SHIFT":
-		d.R_SHIFT = e.Value != 0
-	case "L_ALT":
-		d.L_ALT = e.Value != 0
-	case "R_ALT":
-		d.R_ALT = e.Value != 0
-	case "L_CTRL":
-		d.L_CTRL = e.Value != 0
-	case "R_CTRL":
-		d.R_CTRL = e.Value != 0
+func (d *InputDevice) updModifiers(e *InputEvent) {
+	keyName := e.String()
+	if _, ok := d.Modifiers[keyName]; ok {
+		d.Modifiers[keyName] = e.Value != 0
 	}
 }

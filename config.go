@@ -6,11 +6,14 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 )
 
 type config struct {
 	Rules  []*rule `yaml:"rules"`
 	Global global  `yaml:"global"`
+
+	defaultDelay time.Duration
 
 	// Catches all undefined fields and must be empty after parsing.
 	XXX map[string]interface{} `yaml:",inline"`
@@ -49,8 +52,7 @@ func loadFile(filename string) (*config, error) {
 		return nil, err
 	}
 
-	//TODO: validate XXX
-
+	err = cfg.validate()
 	return cfg, nil
 }
 
@@ -67,6 +69,16 @@ func load(s string) (*config, error) {
 	}
 
 	return cfg, nil
+}
+
+func (cfg *config) validate() error {
+	dur, err := time.ParseDuration(cfg.Global.DefaultDelay)
+	if err != nil {
+		return err
+	}
+
+	cfg.defaultDelay = dur
+	return nil
 }
 
 func checkOverflow(m map[string]interface{}) error {
